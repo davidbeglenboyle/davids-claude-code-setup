@@ -24,7 +24,7 @@ cp -r ready-to-use/chart-design ~/.claude/skills/
 cp -r ready-to-use/* ~/.claude/skills/
 ```
 
-## Ready-to-Use Skills (14)
+## Ready-to-Use Skills (16)
 
 ### Design & Visualization
 
@@ -43,6 +43,13 @@ cp -r ready-to-use/* ~/.claude/skills/
 | **pptx** | PowerPoint creation and editing |
 | **pdf-to-markdown** | Full PDF text extraction for context loading |
 | **markitdown** | Microsoft's file-to-Markdown converter (PDF, DOCX, images, etc.) |
+
+### Quality & Review
+
+| Skill | Description |
+|-------|-------------|
+| **review-loop** | Quality verification cycle: score, critique, fix, re-score (max 3 rounds) |
+| **devils-advocate** | Structured critique with 5-7 challenges across six categories |
 
 ### Workflow & Productivity
 

@@ -54,6 +54,9 @@ After setup, your Claude Code files live here:
 │   ├── skill-name/
 │   │   └── SKILL.md
 │   └── ...
+├── agents/                # Sub-agent definitions (used by skills)
+│   ├── deliverable-critic.md
+│   └── deliverable-fixer.md
 └── projects/              # Session transcripts (auto-generated)
 ```
 
