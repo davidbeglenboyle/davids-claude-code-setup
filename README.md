@@ -12,7 +12,7 @@ This repository contains sanitized versions of my Claude Code setup that you can
 | `skills/ready-to-use/` | Skills you can copy directly (no credentials needed) |
 | `skills/needs-credentials/` | Skills requiring API keys, with setup guides |
 | `skills/david-specific/` | Documentation of skills not included (and why) |
-| `settings/` | Permission templates and configuration guides |
+| `settings/` | Permission templates, configuration guides, and safety patterns |
 | `bin/` | Helper scripts (sanitized) |
 | `mcp-servers/` | MCP server setup instructions |
 
@@ -91,6 +91,10 @@ Reads token from `~/.config/secrets/telegram-bot-token`
 
 See `STORAGE-OPTIONS.md` for multi-machine sync strategies.
 
+## Safety
+
+**[Use `trash` instead of `rm`](settings/SAFETY-TRASH-OVER-RM.md)** — By default, `Bash(rm:*)` in your allow list lets Claude Code permanently delete files without asking. Replace with `Bash(trash:*)` and deny `rm` entirely. Files go to macOS Trash (recoverable) instead of being destroyed.
+
 ## About
 
 Created by David Boyle, Director of [Audience Strategies](https://audiencestrategies.com).
@@ -99,4 +103,4 @@ This is a personal setup shared with collaborators. Not affiliated with Anthropi
 
 ## Status
 
-**Active** — Last updated: 4th February 2026
+**Active** — Last updated: 8th February 2026

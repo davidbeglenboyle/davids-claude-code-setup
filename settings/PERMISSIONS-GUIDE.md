@@ -92,11 +92,12 @@ You can pre-approve actions by adding them to `~/.claude/settings.json`.
       "// Python",
       "Bash(python3:*)",
 
-      "// File operations",
+      "// File operations (trash, not rm — see SAFETY-TRASH-OVER-RM.md)",
       "Bash(ls:*)",
       "Bash(mkdir:*)",
       "Bash(cp:*)",
       "Bash(mv:*)",
+      "Bash(trash:*)",
 
       "// macOS",
       "Bash(open:*)",
@@ -107,6 +108,9 @@ You can pre-approve actions by adding them to `~/.claude/settings.json`.
 
       "// Claude config",
       "Write(~/.claude/*)"
+    ],
+    "deny": [
+      "Bash(rm:*)"
     ]
   }
 }
@@ -178,6 +182,12 @@ export ANTHROPIC_API_KEY=$(cat ~/.config/secrets/anthropic-api-key)
 ```
 
 This keeps credentials out of settings files.
+
+## Safety: Block `rm`, Use `trash`
+
+By default, many setups include `Bash(rm:*)` in the allow list. This lets Claude permanently delete files without asking. Consider replacing it with `Bash(trash:*)` and adding `Bash(rm:*)` to the deny list instead.
+
+See **[SAFETY-TRASH-OVER-RM.md](SAFETY-TRASH-OVER-RM.md)** for the full rationale and setup.
 
 ## Tips
 
