@@ -13,6 +13,7 @@ This repository contains sanitized versions of my Claude Code setup that you can
 | `skills/ready-to-use/` | Skills you can copy directly (no credentials needed) |
 | `skills/needs-credentials/` | Skills requiring API keys, with setup guides |
 | `skills/david-specific/` | Documentation of skills not included (and why) |
+| `agents/` | Agent definitions for critic-fixer pattern (sub-agents) |
 | `settings/` | Permission templates, configuration guides, and safety patterns |
 | `bin/` | Helper scripts (quality-score, sendemail template) |
 | `mcp-servers/` | MCP server setup instructions |
@@ -23,7 +24,8 @@ This repository contains sanitized versions of my Claude Code setup that you can
 2. **CLAUDE.md getting long?** See `rules/README.md` to split it into topic files
 3. **Multi-machine setup?** Read `STORAGE-OPTIONS.md` for sync strategies
 4. **Want skills?** Browse `skills/ready-to-use/` and copy what you need
-5. **Customising CLAUDE.md?** See `claude-md/SECTIONS-EXPLAINED.md`
+5. **Want quality review agents?** See `agents/README.md` for the critic-fixer pattern
+6. **Customising CLAUDE.md?** See `claude-md/SECTIONS-EXPLAINED.md`
 
 ## Philosophy
 
@@ -35,10 +37,11 @@ This repository contains sanitized versions of my Claude Code setup that you can
 
 ## Skills Overview
 
-### Ready to Use (15 skills)
+### Ready to Use (16 skills)
 
 Copy directly into `~/.claude/skills/`:
 
+* **review-loop** — Quality verification cycle: score, critique, fix, re-score (max 3 rounds)
 * **devils-advocate** — Structured critique with 5-7 challenges across six categories
 * **chart-design** — Apple HIG-inspired data visualization principles
 * **frontend-design** — Production-grade web UI generation
@@ -85,6 +88,15 @@ As CLAUDE.md grows (300+ lines is common), split domain-specific instructions in
 ```
 
 Claude Code loads all rule files automatically alongside CLAUDE.md. See `rules/README.md` for templates and setup.
+
+## Agents: The Critic-Fixer Pattern
+
+The `agents/` folder contains sub-agent definitions used by the `/review-loop` skill:
+
+* **deliverable-critic** — Read-only auditor that checks deliverables against organisation standards. Produces findings with severity levels (HARD FAIL / SHOULD FIX / SUGGESTION)
+* **deliverable-fixer** — Edit-capable agent that implements the critic's findings in priority order
+
+The key principle is **separation of powers**: the critic cannot edit, the fixer cannot invent new issues. See `agents/README.md` for setup and customisation.
 
 ## Quality Scoring
 
@@ -138,7 +150,12 @@ This is a personal setup shared with collaborators. Not affiliated with Anthropi
 
 ## Changelog
 
-### 8th February 2026
+### 8th February 2026 (Phase 2)
+* Added `agents/` — deliverable-critic and deliverable-fixer agent definitions
+* Added `review-loop` skill — quality verification cycle with critic-fixer pattern
+* 16 ready-to-use skills total
+
+### 8th February 2026 (Phase 1)
 * Added `rules/` — template rule files for splitting CLAUDE.md by topic
 * Added `devils-advocate` skill — structured 6-category critique
 * Added `quality-score` script — mechanical pre-flight checker for deliverables
