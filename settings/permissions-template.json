@@ -37,7 +37,7 @@
       "Bash(mkdir:*)",
       "Bash(cp:*)",
       "Bash(mv:*)",
-      "Bash(rm:*)",
+      "Bash(trash:*)",
       "Bash(touch:*)",
       "Bash(chmod:*)",
       "Bash(ln:*)",
@@ -102,6 +102,17 @@
       "// ─────────────────────────────────────────────────────────────────",
       "Write(~/.claude/*)",
       "Write(/tmp/*)"
+    ]
+    ],
+    "deny": [
+      "// ─────────────────────────────────────────────────────────────────",
+      "// BLOCKED COMMANDS",
+      "// These are explicitly blocked, not just unapproved.",
+      "// See settings/SAFETY-TRASH-OVER-RM.md for rationale.",
+      "// ─────────────────────────────────────────────────────────────────",
+      "Bash(rm:*)",
+      "Bash(rm -rf:*)",
+      "Bash(rm -r:*)"
     ]
   },
 
