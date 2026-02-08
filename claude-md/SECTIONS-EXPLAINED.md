@@ -62,6 +62,32 @@ Background includes software engineering and technical writing.
 
 ---
 
+### Rules Files (`~/.claude/rules/`)
+
+**Purpose:** Domain-specific instructions that auto-load alongside CLAUDE.md.
+
+**Why it matters:** As CLAUDE.md grows past 300 lines, it becomes unwieldy. Rules let you split by topic while keeping universal preferences (tone, formatting, project structure) in CLAUDE.md.
+
+**When to split:**
+- A section only applies to certain types of work (data analysis, document generation)
+- Your CLAUDE.md is over 300 lines
+- You find yourself scrolling past irrelevant sections
+
+**How it works:**
+- Create `.md` files in `~/.claude/rules/`
+- Claude Code loads them automatically — no configuration needed
+- Optionally add `paths:` YAML frontmatter for conditional loading
+
+**Recommended split:**
+- `data-analysis.md` — Data workflow patterns, Python environment
+- `technical-patterns.md` — Accumulated tool-specific knowledge
+- `secrets-management.md` — Credential management
+- `document-production.md` — Document generation recipes
+
+See `rules/README.md` for templates.
+
+---
+
 ### Session Context Loading
 
 **Purpose:** Tells Claude what to read at session start.

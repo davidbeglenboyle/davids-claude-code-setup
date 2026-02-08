@@ -30,9 +30,10 @@ If you only use Claude Code on one computer:
 | Sync Between Machines | Keep Local (Machine-Specific) |
 |-----------------------|-------------------------------|
 | `~/.claude/skills/` | `~/.claude/settings.local.json` |
-| `~/.claude/CLAUDE.md` | `~/.claude/statsCache.json` |
-| `~/.config/secrets/` | `~/.claude/projects/` (transcripts) |
-| Custom bin scripts | Some OAuth tokens |
+| `~/.claude/rules/` | `~/.claude/statsCache.json` |
+| `~/.claude/CLAUDE.md` | `~/.claude/projects/` (transcripts) |
+| `~/.config/secrets/` | Some OAuth tokens |
+| Custom bin scripts | |
 
 **Why keep transcripts local?** They're large, machine-specific, and often contain sensitive project context. Back up separately if needed.
 
@@ -82,12 +83,16 @@ ls -la ~/.claude/skills
 │   ├── chart-design/
 │   ├── frontend-design/
 │   └── ...
+├── rules/                        # Domain-specific instructions
+│   ├── data-analysis.md
+│   └── ...
 ├── secrets/                      # Credentials
 │   ├── anthropic-api-key
 │   ├── telegram-bot-token
 │   └── google-calendar/
 ├── CLAUDE.md                     # Global instructions
 └── bin/                          # Helper scripts
+    ├── quality-score
     └── sendemail
 ```
 
@@ -96,6 +101,7 @@ ls -la ~/.claude/skills
 | Standard Location | Synced Location |
 |-------------------|-----------------|
 | `~/.claude/skills` | `~/Dropbox/.claude-sync/skills` |
+| `~/.claude/rules` | `~/Dropbox/.claude-sync/rules` |
 | `~/.claude/CLAUDE.md` | `~/Dropbox/.claude-sync/CLAUDE.md` |
 | `~/.config/secrets` | `~/Dropbox/.claude-sync/secrets` |
 

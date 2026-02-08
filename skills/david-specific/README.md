@@ -7,10 +7,10 @@ These skills are part of David's setup but aren't included in this repository be
 | Skill | Reason |
 |-------|--------|
 | Client-branded document skills | Client-specific branding, typography, and colour rules |
+| `diary` + `reflect` | Session diary pipeline with auto-correction extraction to MEMORY.md — useful pattern but tightly coupled to personal workflow |
 | `diary-from-transcripts` | Specific to OMI/Otter transcript processing workflow |
 | `update-ibiza-demand` | Project-specific data pipeline |
 | `transcripts-to-html` | Specific transcript archive format |
-| `insight` | Session transcript mining for personal patterns |
 | `remotion-video` | Complex Remotion setup beyond this repo's scope |
 | `generate-shortcuts-skill` | macOS/iOS Shortcuts plist generation (very niche) |
 

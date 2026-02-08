@@ -163,3 +163,49 @@ Every project that might be paused needs:
 4. **Key files** — What each important file does
 
 Future-me (or Claude) should be able to pick up without context.
+
+---
+
+## CLAUDE.md Diet: Rules Files
+
+When CLAUDE.md exceeds ~300 lines, extract domain-specific sections into `~/.claude/rules/`:
+
+```
+~/.claude/rules/
+├── data-analysis.md          # Data workflows, Python env, cloud sync
+├── technical-patterns.md     # Accumulated tool knowledge
+├── secrets-management.md     # Credential management
+└── document-production.md    # Document generation recipes
+```
+
+Keep universal preferences (tone, formatting, project structure) in CLAUDE.md. Everything loads automatically — no configuration needed.
+
+**The principle:** CLAUDE.md should contain what applies to *every* session. Rules contain what applies to *some* sessions.
+
+---
+
+## Mechanical Quality Scoring
+
+Run `quality-score` before sharing deliverables. It catches things you'd notice on a second read:
+
+- Unresolved `[square brackets]` from your approval workflow
+- TODO/FIXME markers
+- Missing first-line summaries in markdown
+- Stale generated files (`.docx` older than source `.md`)
+
+No LLM involved — pure regex. Fast, deterministic, incorruptible.
+
+---
+
+## Structured Self-Critique
+
+Use `/devils-advocate` before sending client deliverables. Six lenses:
+
+1. **Audience** — Right framing for who'll actually read it?
+2. **Evidence** — What supports the claims? What contradicts them?
+3. **Alternative Framing** — Two different ways to present the same insight
+4. **Complexity** — Could it be simpler without losing substance?
+5. **Action** — What would the reader actually *do*?
+6. **Paradox** — Does this contradict your core beliefs?
+
+Every challenge must quote specific text — no generic critiques allowed.

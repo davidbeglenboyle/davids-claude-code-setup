@@ -46,6 +46,10 @@ After setup, your Claude Code files live here:
 ├── CLAUDE.md              # Your personal instructions
 ├── settings.json          # Global permissions
 ├── settings.local.json    # Machine-specific overrides
+├── rules/                 # Domain-specific instructions (auto-loaded)
+│   ├── data-analysis.md
+│   ├── secrets-management.md
+│   └── ...
 ├── skills/                # Custom skills
 │   ├── skill-name/
 │   │   └── SKILL.md
@@ -53,7 +57,26 @@ After setup, your Claude Code files live here:
 └── projects/              # Session transcripts (auto-generated)
 ```
 
-## III. Installing Skills
+## III. Setting Up Rules (Optional)
+
+Rules files split domain-specific instructions out of CLAUDE.md. Skip this if your CLAUDE.md is under 300 lines.
+
+```bash
+# Create the rules directory
+mkdir -p ~/.claude/rules
+
+# Copy templates (remove "-template" suffix)
+cp rules/data-analysis-template.md ~/.claude/rules/data-analysis.md
+cp rules/secrets-management-template.md ~/.claude/rules/secrets-management.md
+cp rules/document-production-template.md ~/.claude/rules/document-production.md
+cp rules/technical-patterns-template.md ~/.claude/rules/technical-patterns.md
+```
+
+Edit each file to match your tools and workflows. Claude Code loads all files in `~/.claude/rules/` automatically.
+
+See `rules/README.md` for details on conditional loading and best practices.
+
+## IV. Installing Skills
 
 ### From This Repository
 
@@ -83,7 +106,7 @@ ls ~/.claude/skills/
 
 Skills appear in Claude Code's skill list automatically.
 
-## IV. Setting Up CLAUDE.md
+## V. Setting Up CLAUDE.md
 
 ### Start from Template
 
@@ -101,7 +124,7 @@ Edit `~/.claude/CLAUDE.md` and fill in:
 
 See `claude-md/SECTIONS-EXPLAINED.md` for what each section does.
 
-## V. Credential Management
+## VI. Credential Management
 
 ### The Problem
 
@@ -144,7 +167,7 @@ Reads token from `~/.config/secrets/telegram-bot-token`
 
 For multi-machine setups, see `STORAGE-OPTIONS.md`.
 
-## VI. Permissions Configuration
+## VII. Permissions Configuration
 
 ### Understanding Permissions
 
@@ -181,7 +204,7 @@ Edit `~/.claude/settings.json`:
 
 See `settings/PERMISSIONS-GUIDE.md` for detailed patterns.
 
-## VII. Notification Hooks
+## VIII. Notification Hooks
 
 Get notified when Claude Code needs attention:
 
@@ -205,7 +228,22 @@ Get notified when Claude Code needs attention:
 
 See `settings/HOOKS-EXAMPLES.md` for iMessage, Telegram, and other integrations.
 
-## VIII. Troubleshooting
+## IX. Installing quality-score (Optional)
+
+A mechanical pre-flight check for deliverables:
+
+```bash
+# Copy to your PATH
+cp bin/quality-score ~/bin/
+chmod +x ~/bin/quality-score
+
+# Test it
+quality-score README.md
+```
+
+Add client brand rubrics by editing the `BRAND_RUBRICS` dict at the top of the script.
+
+## X. Troubleshooting
 
 ### Skills Not Appearing
 
@@ -225,7 +263,7 @@ See `settings/HOOKS-EXAMPLES.md` for iMessage, Telegram, and other integrations.
 2. Check permissions: `chmod 600 ~/.config/secrets/*`
 3. Source shell profile: `source ~/.zshrc`
 
-## IX. Next Steps
+## XI. Next Steps
 
 1. **Browse skills** — See what's available in `skills/`
 2. **Customise CLAUDE.md** — Make Claude Code work your way

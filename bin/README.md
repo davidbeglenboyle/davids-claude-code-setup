@@ -8,6 +8,28 @@ These scripts live in `~/.claude/bin/` and are called from skills or directly.
 
 ## Scripts in This Repository
 
+### quality-score
+
+Mechanical quality checker for deliverables. No LLM involved — pure regex. Starts at 100, deducts for common issues (unresolved `[brackets]`, TODO/FIXME, missing first-line summary, wrong naming, stale generated files).
+
+**No setup required.** Copy and make executable:
+
+```bash
+cp bin/quality-score ~/bin/
+chmod +x ~/bin/quality-score
+```
+
+**Usage:**
+```bash
+quality-score README.md                      # Score a file
+quality-score ~/projects/my-project/         # Score a directory
+quality-score report.md --verbose            # Show all details
+quality-score report.md --json               # JSON output
+quality-score report.md --rubric data        # Force data rubric
+```
+
+**Customisation:** Edit the `BRAND_RUBRICS` dict at the top of the script to add client-specific colour and font checks. Each brand rubric auto-detects by matching strings in the file path.
+
 ### sendemail-template
 
 A template for sending emails via Gmail SMTP.

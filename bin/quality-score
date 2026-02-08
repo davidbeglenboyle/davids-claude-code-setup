@@ -1,0 +1,555 @@
+#!/usr/bin/env python3
+"""
+Quality Scoring for Deliverables
+
+Calculates objective quality scores (0-100) based on mechanical checks.
+No LLM involved — pure regex and file inspection. Fast, deterministic, incorruptible.
+
+Thresholds: 80 (acceptable), 90 (high quality), 95 (excellence).
+
+Usage:
+    quality-score README.md
+    quality-score "Report Draft (8th Feb 2026).md" --verbose
+    quality-score ~/projects/some-project/ --rubric auto
+    quality-score script.py --rubric data --json
+
+Customisation:
+    Add your own brand rubrics by editing the BRAND_RUBRICS dict below.
+    Each rubric defines valid colours and fonts to check against.
+"""
+
+import sys
+import argparse
+import re
+import os
+from pathlib import Path
+from typing import List, Dict, Optional
+import json
+
+THRESHOLDS = {
+    'acceptable': 80,
+    'high_quality': 90,
+    'excellence': 95,
+}
+
+# ==============================================================================
+# BRAND RUBRICS — Customise these for your clients
+# ==============================================================================
+
+# Each brand rubric defines:
+#   'colours': set of valid hex colours (lowercase)
+#   'fonts': list of valid font names
+#   'path_match': string that triggers auto-detection when found in file path
+
+BRAND_RUBRICS = {
+    # Example: uncomment and customise for your clients
+    #
+    # 'acme': {
+    #     'colours': {'#ff6600', '#333333'},
+    #     'fonts': ['Helvetica', 'Inter'],
+    #     'path_match': 'acme',
+    # },
+    # 'bigcorp': {
+    #     'colours': {'#0057b8', '#ffffff'},
+    #     'fonts': ['Open Sans'],
+    #     'path_match': 'bigcorp',
+    # },
+}
+
+# ==============================================================================
+# BASE CHECKS
+# ==============================================================================
+
+DELIVERABLE_EXTENSIONS = {'.txt', '.md', '.docx', '.pdf', '.xlsx', '.pptx'}
+DATE_PATTERN = re.compile(r'\(\d{1,2}(?:st|nd|rd|th)\s+\w+\s+\d{4}\)')
+
+# Markdown link pattern: [text](url) or [text][ref]
+MARKDOWN_LINK = re.compile(r'\[[^\]]*\]\([^)]*\)|\[[^\]]*\]\[[^\]]*\]')
+# Image pattern: ![alt](url)
+MARKDOWN_IMAGE = re.compile(r'!\[[^\]]*\]\([^)]*\)')
+# Reference-style link definition: [ref]: url
+MARKDOWN_REF = re.compile(r'^\[[^\]]+\]:\s')
+# Checkbox pattern: - [x] or - [ ]
+MARKDOWN_CHECKBOX = re.compile(r'[-*]\s+\[[ xX]\]')
+
+
+def find_unresolved_brackets(content: str, lines: List[str]) -> List[Dict]:
+    """Find [square brackets] that aren't markdown links, images, checkboxes, or code."""
+    issues = []
+    in_code_block = False
+
+    for i, line in enumerate(lines, 1):
+        # Track fenced code blocks
+        stripped = line.strip()
+        if stripped.startswith('```'):
+            in_code_block = not in_code_block
+            continue
+        if in_code_block:
+            continue
+
+        # Skip inline code
+        clean_line = re.sub(r'`[^`]+`', '', line)
+
+        # Remove markdown links, images, references, checkboxes
+        clean_line = MARKDOWN_IMAGE.sub('', clean_line)
+        clean_line = MARKDOWN_LINK.sub('', clean_line)
+        if MARKDOWN_REF.match(clean_line):
+            continue
+        clean_line = MARKDOWN_CHECKBOX.sub('', clean_line)
+
+        # Find remaining brackets
+        for match in re.finditer(r'\[([^\]]+)\]', clean_line):
+            bracket_content = match.group(1)
+            # Skip footnote markers like [^1]
+            if bracket_content.startswith('^'):
+                continue
+            # Skip pure numbers (likely footnote refs)
+            if bracket_content.isdigit():
+                continue
+            issues.append({
+                'line': i,
+                'text': match.group(0),
+                'content': bracket_content,
+            })
+
+    return issues
+
+
+def find_todo_fixme(lines: List[str]) -> List[Dict]:
+    """Find TODO and FIXME markers."""
+    issues = []
+    pattern = re.compile(r'\b(TODO|FIXME)\b', re.IGNORECASE)
+    in_code_block = False
+
+    for i, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if stripped.startswith('```'):
+            in_code_block = not in_code_block
+            continue
+        for match in pattern.finditer(line):
+            issues.append({
+                'line': i,
+                'text': match.group(0),
+            })
+
+    return issues
+
+
+def check_first_line_summary(filepath: Path, lines: List[str]) -> bool:
+    """Check if markdown file starts with a one-sentence summary."""
+    if filepath.suffix not in ('.md', '.markdown'):
+        return True
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped:
+            if stripped.startswith('#'):
+                return False
+            if len(stripped) > 20:
+                return True
+            return False
+
+    return False
+
+
+def check_deliverable_naming(filepath: Path) -> Dict[str, bool]:
+    """Check if deliverable file follows naming convention."""
+    result = {'has_correct_name': True, 'has_date': True}
+
+    if filepath.suffix not in DELIVERABLE_EXTENSIONS:
+        return result
+
+    name = filepath.stem
+
+    # Code/internal files use YYYY-MM-DD-hyphenated — those are fine
+    if re.match(r'^\d{4}-\d{2}-\d{2}', name):
+        return result
+
+    # READMEs and config files are exempt
+    if name.upper() in ('README', 'CLAUDE', 'MEMORY', 'DECISION-PATTERNS'):
+        return result
+
+    # Deliverable should have date in brackets: "Name (8th Feb 2026).ext"
+    if not DATE_PATTERN.search(name):
+        result['has_date'] = False
+
+    # Deliverable should use spaces and proper caps, not all-lowercase-hyphenated
+    if filepath.suffix in {'.docx', '.xlsx', '.pdf'}:
+        if '-' in name and ' ' not in name:
+            result['has_correct_name'] = False
+
+    return result
+
+
+def find_hardcoded_paths(lines: List[str]) -> List[Dict]:
+    """Find hardcoded absolute paths in code files."""
+    issues = []
+    path_pattern = re.compile(r'''['"/](?:Users|home|opt|var|etc)/\S+''')
+
+    for i, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if stripped.startswith('#') and not stripped.startswith('#!'):
+            continue
+        for match in path_pattern.finditer(line):
+            path_text = match.group(0)
+            if any(skip in path_text for skip in ['http:', 'https:', '/tmp/', '#!/']):
+                continue
+            issues.append({
+                'line': i,
+                'text': path_text,
+            })
+
+    return issues
+
+
+def check_brand_colours(content: str, valid_colours: set) -> List[Dict]:
+    """Find hex colour references that don't match brand palette."""
+    issues = []
+    hex_pattern = re.compile(r'#[0-9A-Fa-f]{6}\b')
+
+    for match in hex_pattern.finditer(content):
+        colour = match.group(0)
+        if colour.lower() not in {c.lower() for c in valid_colours}:
+            line_num = content[:match.start()].count('\n') + 1
+            issues.append({
+                'line': line_num,
+                'text': colour,
+            })
+
+    return issues
+
+
+def check_font_references(content: str, valid_fonts: List[str], lines: List[str]) -> List[Dict]:
+    """Find font references that don't match expected brand fonts."""
+    issues = []
+    font_pattern = re.compile(r'font[-_]?family[:\s]+["\']?([^"\';\n}]+)', re.IGNORECASE)
+
+    for i, line in enumerate(lines, 1):
+        for match in font_pattern.finditer(line):
+            font = match.group(1).strip()
+            if not any(valid.lower() in font.lower() for valid in valid_fonts):
+                issues.append({
+                    'line': i,
+                    'text': font,
+                })
+
+    return issues
+
+
+# ==============================================================================
+# SCORER
+# ==============================================================================
+
+class QualityScorer:
+    def __init__(self, filepath: Path, rubric: str = 'base', verbose: bool = False):
+        self.filepath = filepath
+        self.rubric = rubric
+        self.verbose = verbose
+        self.score = 100
+        self.issues: List[Dict] = []
+        self.auto_fail = False
+
+    def run(self) -> Dict:
+        if not self.filepath.exists():
+            return self._error(f'File not found: {self.filepath}')
+
+        if self.filepath.is_dir():
+            return self._score_directory()
+
+        return self._score_file()
+
+    def _score_file(self) -> Dict:
+        try:
+            content = self.filepath.read_text(encoding='utf-8')
+        except UnicodeDecodeError:
+            content = ''
+        except Exception as e:
+            return self._error(f'Cannot read {self.filepath}: {e}')
+
+        lines = content.split('\n') if content else []
+
+        # Base checks (always run)
+        self._check_brackets(content, lines)
+        self._check_todos(lines)
+        self._check_first_line(lines)
+        self._check_naming()
+
+        # Brand rubric checks
+        if self.rubric in BRAND_RUBRICS:
+            brand = BRAND_RUBRICS[self.rubric]
+            self._check_brand(content, lines, brand)
+        elif self.rubric == 'data':
+            self._check_data(lines)
+
+        self.score = max(0, self.score)
+        return self._report()
+
+    def _score_directory(self) -> Dict:
+        results = []
+        for path in sorted(self.filepath.rglob('*')):
+            if path.is_file() and not any(p in str(path) for p in ['/archive/', '/.', '/node_modules/', '/__pycache__/']):
+                if path.suffix in {'.md', '.py', '.txt', '.docx', '.pptx', '.pdf', '.xlsx', '.csv'}:
+                    scorer = QualityScorer(path, rubric=self.rubric, verbose=self.verbose)
+                    results.append(scorer._score_file())
+        if not results:
+            return self._error(f'No scoreable files in {self.filepath}')
+
+        total_score = sum(r['score'] for r in results) / len(results)
+        total_issues = []
+        for r in results:
+            total_issues.extend(r.get('issues', []))
+
+        return {
+            'filepath': str(self.filepath),
+            'score': round(total_score),
+            'status': self._status(round(total_score)),
+            'auto_fail': any(r.get('auto_fail') for r in results),
+            'issues': total_issues,
+            'file_count': len(results),
+            'file_scores': {r['filepath']: r['score'] for r in results},
+            'rubric': self.rubric,
+        }
+
+    def _check_brackets(self, content: str, lines: List[str]):
+        bracket_issues = find_unresolved_brackets(content, lines)
+        for issue in bracket_issues:
+            self.score -= 15
+            self.issues.append({
+                'check': 'unresolved_brackets',
+                'deduction': 15,
+                'line': issue['line'],
+                'detail': issue['text'],
+            })
+
+    def _check_todos(self, lines: List[str]):
+        todo_issues = find_todo_fixme(lines)
+        for issue in todo_issues:
+            self.score -= 10
+            self.issues.append({
+                'check': 'todo_fixme',
+                'deduction': 10,
+                'line': issue['line'],
+                'detail': issue['text'],
+            })
+
+    def _check_first_line(self, lines: List[str]):
+        if self.filepath.suffix in ('.md', '.markdown'):
+            if not check_first_line_summary(self.filepath, lines):
+                self.score -= 5
+                self.issues.append({
+                    'check': 'missing_first_line_summary',
+                    'deduction': 5,
+                    'line': 1,
+                    'detail': 'First line should be a one-sentence summary, not a heading',
+                })
+
+    def _check_naming(self):
+        result = check_deliverable_naming(self.filepath)
+        if not result['has_date']:
+            self.score -= 5
+            self.issues.append({
+                'check': 'missing_date_in_name',
+                'deduction': 5,
+                'line': 0,
+                'detail': f'Deliverable filename missing date: {self.filepath.name}',
+            })
+        if not result['has_correct_name']:
+            self.score -= 5
+            self.issues.append({
+                'check': 'wrong_deliverable_naming',
+                'deduction': 5,
+                'line': 0,
+                'detail': f'Deliverable should use spaces not hyphens: {self.filepath.name}',
+            })
+        # Check for stale generated files (docx/pptx older than source .md)
+        if self.filepath.suffix in {'.docx', '.pptx'}:
+            self._check_stale_companion()
+
+    def _check_stale_companion(self):
+        stem = self.filepath.stem
+        parent = self.filepath.parent
+        candidates = list(parent.glob('*.md'))
+        for md_file in candidates:
+            if md_file.stem == stem or md_file.stem.lower() in stem.lower():
+                if md_file.stat().st_mtime > self.filepath.stat().st_mtime:
+                    self.score -= 15
+                    self.issues.append({
+                        'check': 'stale_generated_file',
+                        'deduction': 15,
+                        'line': 0,
+                        'detail': f'{self.filepath.suffix} is older than source {md_file.name} — regenerate',
+                    })
+                    break
+
+    def _check_brand(self, content: str, lines: List[str], brand: Dict):
+        """Check brand colours and fonts for any configured brand rubric."""
+        colour_issues = check_brand_colours(content, brand['colours'])
+        for issue in colour_issues:
+            self.score -= 10
+            self.issues.append({
+                'check': 'wrong_brand_colour',
+                'deduction': 10,
+                'line': issue['line'],
+                'detail': f'Non-brand colour: {issue["text"]}',
+            })
+        font_issues = check_font_references(content, brand['fonts'], lines)
+        for issue in font_issues:
+            self.score -= 5
+            self.issues.append({
+                'check': 'wrong_font',
+                'deduction': 5,
+                'line': issue['line'],
+                'detail': f'Non-brand font: {issue["text"]}',
+            })
+
+    def _check_data(self, lines: List[str]):
+        path_issues = find_hardcoded_paths(lines)
+        for issue in path_issues:
+            self.score -= 10
+            self.issues.append({
+                'check': 'hardcoded_path',
+                'deduction': 10,
+                'line': issue['line'],
+                'detail': f'Hardcoded path: {issue["text"]}',
+            })
+
+    def _status(self, score: int) -> str:
+        if score >= THRESHOLDS['excellence']:
+            return 'EXCELLENCE'
+        elif score >= THRESHOLDS['high_quality']:
+            return 'HIGH QUALITY'
+        elif score >= THRESHOLDS['acceptable']:
+            return 'ACCEPTABLE'
+        else:
+            return 'BELOW THRESHOLD'
+
+    def _report(self) -> Dict:
+        return {
+            'filepath': str(self.filepath),
+            'score': self.score,
+            'status': self._status(self.score),
+            'auto_fail': self.auto_fail,
+            'issues': self.issues,
+            'rubric': self.rubric,
+        }
+
+    def _error(self, msg: str) -> Dict:
+        return {
+            'filepath': str(self.filepath),
+            'score': 0,
+            'status': 'ERROR',
+            'auto_fail': True,
+            'issues': [{'check': 'error', 'deduction': 100, 'line': 0, 'detail': msg}],
+            'rubric': self.rubric,
+        }
+
+
+# ==============================================================================
+# AUTO-DETECT RUBRIC
+# ==============================================================================
+
+def auto_detect_rubric(filepath: Path) -> str:
+    """Detect rubric from file path."""
+    path_str = str(filepath).lower()
+
+    # Check brand rubrics first
+    for name, brand in BRAND_RUBRICS.items():
+        if brand.get('path_match', '') and brand['path_match'] in path_str:
+            return name
+
+    # Data files
+    if filepath.suffix in {'.py', '.csv', '.db', '.sqlite', '.sql'}:
+        return 'data'
+    if 'data' in path_str or 'pipeline' in path_str:
+        return 'data'
+
+    return 'base'
+
+
+# ==============================================================================
+# CLI
+# ==============================================================================
+
+def print_report(report: Dict, verbose: bool = False):
+    filepath = report['filepath']
+    score = report['score']
+    status = report['status']
+    issues = report.get('issues', [])
+    rubric = report.get('rubric', 'base')
+
+    name = Path(filepath).name
+    print(f'\nFILE: {name}')
+    print(f'SCORE: {score}/100 ({status})')
+    print(f'RUBRIC: {rubric}')
+
+    if 'file_scores' in report:
+        print(f'FILES: {report["file_count"]}')
+        if verbose:
+            for fp, sc in sorted(report['file_scores'].items(), key=lambda x: x[1]):
+                print(f'  {sc:3d}  {Path(fp).name}')
+
+    if issues:
+        print('ISSUES:')
+        for issue in sorted(issues, key=lambda x: -x['deduction']):
+            line_info = f' line {issue["line"]}:' if issue.get('line', 0) > 0 else ''
+            print(f'  -{issue["deduction"]:2d}{line_info} {issue["detail"]}')
+    else:
+        print('ISSUES: None')
+
+    print()
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Quality score for deliverables (0-100, no LLM)',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Thresholds: 80 (acceptable), 90 (high quality), 95 (excellence)
+Exit codes: 0 = score >= 80, 1 = score < 80, 2 = auto-fail
+
+Examples:
+  quality-score README.md
+  quality-score "Report (8th Feb 2026).md" --verbose
+  quality-score ~/projects/my-project/ --rubric auto
+  quality-score script.py --rubric data --json
+        """,
+    )
+
+    parser.add_argument('paths', type=Path, nargs='+', help='File(s) or directory to score')
+    parser.add_argument('--rubric', default='auto',
+                        help='Scoring rubric: base, data, auto, or any brand name from BRAND_RUBRICS')
+    parser.add_argument('--verbose', action='store_true', help='Show all details')
+    parser.add_argument('--json', action='store_true', help='Output as JSON')
+
+    args = parser.parse_args()
+
+    results = []
+    exit_code = 0
+
+    for filepath in args.paths:
+        filepath = filepath.expanduser().resolve()
+
+        rubric = args.rubric
+        if rubric == 'auto':
+            rubric = auto_detect_rubric(filepath)
+
+        scorer = QualityScorer(filepath, rubric=rubric, verbose=args.verbose)
+        report = scorer.run()
+        results.append(report)
+
+        if not args.json:
+            print_report(report, verbose=args.verbose)
+
+        if report.get('auto_fail'):
+            exit_code = max(exit_code, 2)
+        elif report['score'] < THRESHOLDS['acceptable']:
+            exit_code = max(exit_code, 1)
+
+    if args.json:
+        print(json.dumps(results, indent=2))
+
+    sys.exit(exit_code)
+
+
+if __name__ == '__main__':
+    main()

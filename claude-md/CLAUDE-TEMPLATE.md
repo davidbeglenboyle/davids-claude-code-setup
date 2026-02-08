@@ -44,7 +44,9 @@ When multiple CLAUDE.md files exist, precedence is:
 2. **Project-specific** (in repo root) — Overrides user-level for that project
 3. **Sub-project** (nested directories) — Overrides parent for that scope
 
-**Rules:**
+**Rules files** at `~/.claude/rules/` auto-load alongside CLAUDE.md. Use them to split domain-specific instructions by topic (data analysis, secrets, document production, etc.) so CLAUDE.md stays focused on universal preferences.
+
+**Precedence rules:**
 * Project-specific files may contradict user-level guidance intentionally
 * When in doubt, project-specific wins over global
 * Cross-reference rather than duplicate — keep detail in one place
