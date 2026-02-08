@@ -7,7 +7,7 @@ These skills are part of David's setup but aren't included in this repository be
 | Skill | Reason |
 |-------|--------|
 | Client-branded document skills | Client-specific branding, typography, and colour rules |
-| `diary` + `reflect` | Session diary pipeline with auto-correction extraction to MEMORY.md — useful pattern but tightly coupled to personal workflow |
+| `diary` + `reflect` | Session diary pipeline — diary Step 4b auto-extracts `[LEARN:category]` corrections to MEMORY.md Corrections Log, `/reflect` analyses patterns across entries |
 | `diary-from-transcripts` | Specific to OMI/Otter transcript processing workflow |
 | `update-ibiza-demand` | Project-specific data pipeline |
 | `transcripts-to-html` | Specific transcript archive format |

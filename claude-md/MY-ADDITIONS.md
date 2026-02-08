@@ -209,3 +209,18 @@ Use `/devils-advocate` before sending client deliverables. Six lenses:
 6. **Paradox** — Does this contradict your core beliefs?
 
 Every challenge must quote specific text — no generic critiques allowed.
+
+---
+
+## Review Loop with Critic-Fixer Agents
+
+Use `/review-loop` to run a full quality cycle on deliverables:
+
+1. **Score** — `quality-score` checks mechanics (brackets, TODOs, naming)
+2. **Critique** — A read-only critic agent audits against organisation standards
+3. **Fix** — An edit-capable fixer agent implements the critic's findings
+4. **Re-score** — Verify fixes landed. Max 3 rounds
+
+The critic can only read; the fixer can only fix what the critic flagged. Neither can go rogue.
+
+Customise the agents with your own organisation standards — see `agents/README.md`.
