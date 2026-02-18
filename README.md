@@ -58,7 +58,7 @@ Copy directly into `~/.claude/skills/`:
 * **pptx** — PowerPoint creation and editing
 * **pdf-to-markdown** — Full PDF text extraction
 
-### Needs Credentials (5 skills)
+### Needs Credentials (6 skills)
 
 Each includes a `SETUP.md` with human and AI agent setup instructions:
 
@@ -67,6 +67,7 @@ Each includes a `SETUP.md` with human and AI agent setup instructions:
 * **sendemail** — Gmail SMTP email sending
 * **scrobble** — Last.fm music scrobbling
 * **gdocs-sync** — Markdown to Google Docs sync
+* **gdocs-branded** — Branded Google Docs from Markdown (fonts, colours, tables)
 
 ### From Anthropic (Reference Only)
 

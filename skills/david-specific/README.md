@@ -6,7 +6,7 @@ These skills are part of David's setup but aren't included in this repository be
 
 | Skill | Reason |
 |-------|--------|
-| Client-branded document skills | Client-specific branding, typography, and colour rules |
+| Client-branded document skills | David's versions have real client brands; generic version now available as `gdocs-branded` in needs-credentials |
 | `diary` + `reflect` | Session diary pipeline — diary Step 4b auto-extracts `[LEARN:category]` corrections to MEMORY.md Corrections Log, `/reflect` analyses patterns across entries |
 | `diary-from-transcripts` | Specific to OMI/Otter transcript processing workflow |
 | `update-ibiza-demand` | Project-specific data pipeline |
@@ -18,13 +18,9 @@ These skills are part of David's setup but aren't included in this repository be
 
 ### Client-Branded Documents
 
-Create your own branded document skills:
+A generic version is now available at `skills/needs-credentials/gdocs-branded/` with three example brands you can customise. It generates fully branded Google Docs from Markdown with proper typography, tables, and stable URLs.
 
-1. Copy `docx` or `pptx` as a starting point
-2. Add your client's brand guidelines (fonts, colours, spacing)
-3. Name it `client-docx` or similar
-
-See the `docx` skill's template selection logic for how to auto-detect client context.
+For Word documents instead of Google Docs, copy `docx` or `pptx` as a starting point and add your own brand guidelines.
 
 ### Diary/Transcript Processing
 
