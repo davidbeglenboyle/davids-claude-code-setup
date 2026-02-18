@@ -147,9 +147,13 @@ This is a personal setup shared with collaborators. Not affiliated with Anthropi
 
 ## Status
 
-**Active** — Last updated: 8th February 2026
+**Active** — Last updated: 18th February 2026
 
 ## Changelog
+
+### 18th February 2026
+* Added `gdocs-branded` skill — branded Google Docs from Markdown (fonts, colours, tables, stable URLs)
+* 6 needs-credentials skills total
 
 ### 8th February 2026 (Phase 2)
 * Added `agents/` — deliverable-critic and deliverable-fixer agent definitions
