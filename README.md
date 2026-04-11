@@ -60,7 +60,7 @@ Copy directly into `~/.claude/skills/`:
 * **pptx** — PowerPoint creation and editing
 * **pdf-to-markdown** — Full PDF text extraction
 
-### Needs Credentials (6 skills)
+### Needs Credentials (7 skills)
 
 Each includes a `SETUP.md` with human and AI agent setup instructions:
 
@@ -68,7 +68,8 @@ Each includes a `SETUP.md` with human and AI agent setup instructions:
 * **callme** — Telegram notifications and conversations
 * **sendemail** — Gmail SMTP email sending
 * **scrobble** — Last.fm music scrobbling
-* **gdocs-sync** — Markdown to Google Docs sync
+* **gdocs-sync** — Plain Markdown to Google Docs sync (stable URL)
+* **gdocs-branded** — Branded Google Docs from Markdown (fonts, colours, tables, stable URL)
 * **linkedin-posts** — Fetch posts and comments via LinkedIn Voyager API using Chrome cookies (no API key, no OAuth)
 
 ### From Anthropic (Reference Only)
@@ -153,6 +154,12 @@ This is a personal setup shared with collaborators. Not affiliated with Anthropi
 **Active** — Last updated: 11th April 2026
 
 ## Changelog
+
+### 11th April 2026 (gdocs-branded skill)
+
+* Added `gdocs-branded` skill (needs-credentials) — generate branded Google Docs from Markdown with full typography, tables, and stable URLs. Copies a brand-specific Google Docs template, clears the body, and re-populates it with brand-correct fonts, heading colours, and table styling. Three built-in example brands (`editorial`, `corporate`, `modern`) demonstrate different typographic strategies; users can override via `~/.config/google-docs/brands.json`. Requires Google OAuth with Docs + Drive scopes (drive scope needed to copy templates).
+* Fixed latent bug in `skills/README.md`: `linkedin-posts` was added on 11th April but the per-folder README still listed 5 needs-credentials skills. Bumped to 7 and added both missing rows.
+* This PR supersedes the long-open PR #4 (same feature, branched pre-February Phase 1a, stuck with merge conflicts). Soft-leakage in the original PR's `DEFAULT_BRANDS` dict — three brands whose colour + font combinations fingerprinted real client brands — has been replaced with genuinely generic palettes.
 
 ### 11th April 2026 (Phase 1a: operating-system layer)
 

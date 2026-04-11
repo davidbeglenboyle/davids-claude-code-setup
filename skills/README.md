@@ -68,7 +68,7 @@ cp -r ready-to-use/* ~/.claude/skills/
 | **nano-banana-builder** | Next.js + Google Gemini image generation apps |
 | **google-official-seo-guide** | Official Google SEO documentation reference |
 
-## Needs-Credentials Skills (5)
+## Needs-Credentials Skills (7)
 
 Each includes a `SETUP.md` with step-by-step instructions.
 
@@ -79,6 +79,8 @@ Each includes a `SETUP.md` with step-by-step instructions.
 | **sendemail** | Gmail SMTP | App password |
 | **scrobble** | Last.fm | API key + session key |
 | **gdocs-sync** | Google Docs | OAuth credentials + token |
+| **gdocs-branded** | Google Docs | OAuth credentials + token + template docs |
+| **linkedin-posts** | LinkedIn Voyager API | Chrome session cookies (no API key) |
 
 ## From Anthropic (Reference)
 
