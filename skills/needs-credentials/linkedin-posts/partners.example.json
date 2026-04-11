@@ -1,0 +1,17 @@
+{
+  "_comment": "Each entry is one person to monitor. public_id is the LinkedIn URL slug (linkedin.com/in/PUBLIC_ID). name/role/location are metadata carried through to the output JSON — use them for filtering, grouping, or display.",
+  "partners": [
+    {
+      "name": "Example Person",
+      "public_id": "example-slug",
+      "role": "Head of Something",
+      "location": "London"
+    },
+    {
+      "name": "Another Person",
+      "public_id": "another-slug",
+      "role": "Founder",
+      "location": "New York"
+    }
+  ]
+}

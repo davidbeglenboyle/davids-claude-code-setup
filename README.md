@@ -58,7 +58,7 @@ Copy directly into `~/.claude/skills/`:
 * **pptx** — PowerPoint creation and editing
 * **pdf-to-markdown** — Full PDF text extraction
 
-### Needs Credentials (5 skills)
+### Needs Credentials (6 skills)
 
 Each includes a `SETUP.md` with human and AI agent setup instructions:
 
@@ -67,6 +67,7 @@ Each includes a `SETUP.md` with human and AI agent setup instructions:
 * **sendemail** — Gmail SMTP email sending
 * **scrobble** — Last.fm music scrobbling
 * **gdocs-sync** — Markdown to Google Docs sync
+* **linkedin-posts** — Fetch posts and comments via LinkedIn Voyager API using Chrome cookies (no API key, no OAuth)
 
 ### From Anthropic (Reference Only)
 
@@ -149,6 +150,9 @@ This is a personal setup shared with collaborators. Not affiliated with Anthropi
 **Active** — Last updated: 8th February 2026
 
 ## Changelog
+
+### 11th April 2026
+* Added `linkedin-posts` skill (needs-credentials) — fetch LinkedIn posts and comments for a single person or a configured list. Uses Chrome session cookies via `browser_cookie3` rather than an API key, so setup is "pip install + be signed into LinkedIn in Chrome". Includes a shared `linkedin_posts_lib.py` with silent-reshare detection, GraphQL comments-on-others support, and a `comments-probe.passe` script for re-capturing query IDs when LinkedIn rotates them.
 
 ### 8th February 2026 (Phase 2)
 * Added `agents/` — deliverable-critic and deliverable-fixer agent definitions

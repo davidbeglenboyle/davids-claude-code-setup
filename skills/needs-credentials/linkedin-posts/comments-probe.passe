@@ -1,0 +1,48 @@
+# passe probe script: re-capture the Voyager GraphQL queryIds used by
+# linkedin_posts_lib.fetch_person_comments when LinkedIn rotates them.
+#
+# WHEN TO RUN THIS
+#     fetch_posts.py starts returning http 400 on the comments fetch, OR
+#     fetch_person_comments returns "could not resolve fsd_profile URN" for
+#     profiles that previously worked.
+#
+# HOW TO RUN
+#     1. Make sure you're logged into LinkedIn in the debug Chrome on port 9223:
+#          chrome-debug         # or however you launch Chrome with --remote-debugging-port=9223
+#          # then manually log into LinkedIn in that window if needed
+#
+#     2. Replace the target profile URL below with any person's /recent-activity/comments/
+#        page — the probe just needs LinkedIn to issue a real comments-on-others
+#        GraphQL call so we can capture the queryId.
+#
+#     3. Run the probe:
+#          PASSE_CDP=http://localhost:9223 passe run comments-probe.passe
+#
+#     4. Extract the new queryIds from /tmp/comments-capture.jsonl:
+#          python3 -c "
+#          import json
+#          for line in open('/tmp/comments-capture.jsonl'):
+#              r=json.loads(line)
+#              u=r.get('url','')
+#              if 'voyager/api/graphql' in u and 'voyagerFeedDashProfileUpdates' in u:
+#                  print('COMMENTS_QUERY_ID =', u.split('queryId=')[1])
+#              if 'voyagerIdentityDashProfiles.' in u and 'memberIdentity' in u:
+#                  print('PROFILES_QUERY_ID =', u.split('queryId=')[1])
+#          "
+#
+#     5. Paste the new hashes into linkedin_posts_lib.py constants
+#        PROFILES_QUERY_ID and COMMENTS_QUERY_ID at the top of the file.
+#
+# ALTERNATIVE: if you don't have passe installed, you can re-capture manually via
+# Chrome DevTools: open linkedin.com → DevTools → Network tab → filter for
+# "voyager/api/graphql" → visit a profile's /recent-activity/comments/ page →
+# copy the queryId from the request URL.
+
+goto https://www.linkedin.com/feed/
+wait 2
+eval (()=>{const s=document.querySelector('header'); return 'logged_in='+(s?'yes':'no')})()
+capture --bodies /tmp/comments-capture.jsonl
+goto https://www.linkedin.com/in/REPLACE_WITH_ANY_PROFILE_SLUG/recent-activity/comments/
+wait-idle 20
+wait 3
+eval document.title
