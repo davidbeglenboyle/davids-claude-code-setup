@@ -24,7 +24,7 @@ cp -r ready-to-use/chart-design ~/.claude/skills/
 cp -r ready-to-use/* ~/.claude/skills/
 ```
 
-## Ready-to-Use Skills (16)
+## Ready-to-Use Skills (17)
 
 ### Design & Visualization
 
@@ -59,6 +59,7 @@ cp -r ready-to-use/* ~/.claude/skills/
 | **edit** | Spatial editing with `{curly brace}` markers in Markdown |
 | **release-notes** | Changelog generation from git history or manual input |
 | **skill-creator** | Meta-skill for creating new skills |
+| **tidy** | Project cleanup: archive old files, rename, reorganise, document |
 
 ### Development
 
