@@ -26,6 +26,8 @@ This repository contains sanitized versions of my Claude Code setup that you can
 4. **Want skills?** Browse `skills/ready-to-use/` and copy what you need
 5. **Want quality review agents?** See `agents/README.md` for the critic-fixer pattern
 6. **Customising CLAUDE.md?** See `claude-md/SECTIONS-EXPLAINED.md`
+7. **Running bridges, scheduled tasks, or always-on services?** See `SERVICES-GUIDE.md` for LaunchAgents, the services registry pattern, and the TCC Full Disk Access gotchas that will eat your afternoon if you don't know them
+8. **Juggling multiple clients or businesses?** See `rules/entity-routing-template.md` for the `db-<entity>/` directory convention, `project-config.json` schema, and email send-as routing table
 
 ## Philosophy
 
@@ -85,7 +87,8 @@ As CLAUDE.md grows (300+ lines is common), split domain-specific instructions in
 ├── data-analysis.md          # Data workflow patterns
 ├── secrets-management.md     # Credential management
 ├── document-production.md    # Document generation recipes
-└── technical-patterns.md     # Accumulated technical knowledge
+├── technical-patterns.md     # Accumulated technical knowledge
+└── entity-routing.md         # Multi-client/entity directory + email routing
 ```
 
 Claude Code loads all rule files automatically alongside CLAUDE.md. See `rules/README.md` for templates and setup.
@@ -147,11 +150,18 @@ This is a personal setup shared with collaborators. Not affiliated with Anthropi
 
 ## Status
 
-**Active** — Last updated: 8th February 2026
+**Active** — Last updated: 11th April 2026
 
 ## Changelog
 
-### 11th April 2026
+### 11th April 2026 (Phase 1a: operating-system layer)
+
+Two new documentation files that reframe the repo around the patterns that have accumulated since February — bridges, services, scheduled tasks, and multi-entity routing — rather than just skills.
+
+* Added `SERVICES-GUIDE.md` — a top-level guide to running Claude Code as a small operating system: always-on bridges as LaunchAgents, scheduled tasks via Claude Code Desktop, the services registry pattern (`~/.claude/services/registry.json`), the `launchctl bootstrap`/`bootout` modern API, reverse-DNS label namespacing, source ↔ runtime split, install-manifest pattern for clean uninstall, and a detailed TCC Full Disk Access section covering the interactive-vs-headless identity split and the Homebrew Cellar path invalidation gotcha.
+* Added `rules/entity-routing-template.md` — a template for multi-client / multi-business work. Uses four fictional entities (Acme Strategy Group, Bridgeport Advisory, Harlow & Co, Vertex Forum) to illustrate the `db-<entity>/` directory convention, per-entity KB + dated sub-projects layout, `project-config.json` schema with routing heuristics, email send-as alias routing table with "all client mail to draft first" invariant, and the parent-directory → config → ask resolution order.
+
+### 11th April 2026 (linkedin-posts)
 * Added `linkedin-posts` skill (needs-credentials) — fetch LinkedIn posts and comments for a single person or a configured list. Uses Chrome session cookies via `browser_cookie3` rather than an API key, so setup is "pip install + be signed into LinkedIn in Chrome". Includes a shared `linkedin_posts_lib.py` with silent-reshare detection, GraphQL comments-on-others support, and a `comments-probe.passe` script for re-capturing query IDs when LinkedIn rotates them.
 
 ### 8th February 2026 (Phase 2)
