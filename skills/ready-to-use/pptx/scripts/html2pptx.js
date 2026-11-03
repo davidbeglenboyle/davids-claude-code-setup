@@ -27,6 +27,7 @@
 
 const { chromium } = require('playwright');
 const path = require('path');
+const fs = require('fs');
 const sharp = require('sharp');
 
 const PT_PER_PX = 0.75;
@@ -120,25 +121,30 @@ function validateTextBoxPosition(slideData, bodyDimensions) {
 // Security: slide HTML can name any path, and PptxGenJS embeds whatever file it is given.
 // Only image files inside the slide's own folder (or http/https/data URLs) may be embedded,
 // so a slide from an untrusted source cannot copy ~/.ssh or other local files into the deck.
-let allowedAssetDir = null;
 const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp']);
 
-function safeImagePath(rawPath) {
+function safeImagePath(rawPath, allowedDir) {
   const imagePath = rawPath.startsWith('file://') ? rawPath.replace('file://', '') : rawPath;
   if (/^(https?:|data:)/i.test(imagePath)) return imagePath;
-  const resolved = path.resolve(imagePath);
-  const dir = allowedAssetDir || process.cwd();
+  // Resolve symlinks on both sides, so an allowed-looking .png link cannot point outside the folder.
+  let dir, resolved;
+  try {
+    dir = fs.realpathSync(allowedDir || process.cwd());
+    resolved = fs.realpathSync(path.resolve(imagePath));
+  } catch (e) {
+    throw new Error(`Refusing to embed "${rawPath}": file not found or unreadable`);
+  }
   const ext = path.extname(resolved).toLowerCase();
-  if (!IMAGE_EXTENSIONS.has(ext) || !(resolved === dir || resolved.startsWith(dir + path.sep))) {
+  if (!IMAGE_EXTENSIONS.has(ext) || !resolved.startsWith(dir + path.sep)) {
     throw new Error(`Refusing to embed "${rawPath}": only image files inside ${dir} are allowed`);
   }
   return resolved;
 }
 
 // Helper: Add background to slide
-async function addBackground(slideData, targetSlide, tmpDir) {
+async function addBackground(slideData, targetSlide, tmpDir, allowedDir) {
   if (slideData.background.type === 'image' && slideData.background.path) {
-    const imagePath = safeImagePath(slideData.background.path);
+    const imagePath = safeImagePath(slideData.background.path, allowedDir);
     targetSlide.background = { path: imagePath };
   } else if (slideData.background.type === 'color' && slideData.background.value) {
     targetSlide.background = { color: slideData.background.value };
@@ -146,10 +152,10 @@ async function addBackground(slideData, targetSlide, tmpDir) {
 }
 
 // Helper: Add elements to slide
-function addElements(slideData, targetSlide, pres) {
+function addElements(slideData, targetSlide, pres, allowedDir) {
   for (const el of slideData.elements) {
     if (el.type === 'image') {
-      const imagePath = safeImagePath(el.src);
+      const imagePath = safeImagePath(el.src, allowedDir);
       targetSlide.addImage({
         path: imagePath,
         x: el.position.x,
@@ -928,7 +934,7 @@ async function html2pptx(htmlFile, pres, options = {}) {
     let slideData;
 
     const filePath = path.isAbsolute(htmlFile) ? htmlFile : path.join(process.cwd(), htmlFile);
-    allowedAssetDir = path.dirname(path.resolve(filePath));
+    const allowedDir = path.dirname(path.resolve(filePath));
     const validationErrors = [];
 
     try {
@@ -981,8 +987,8 @@ async function html2pptx(htmlFile, pres, options = {}) {
 
     const targetSlide = slide || pres.addSlide();
 
-    await addBackground(slideData, targetSlide, tmpDir);
-    addElements(slideData, targetSlide, pres);
+    await addBackground(slideData, targetSlide, tmpDir, allowedDir);
+    addElements(slideData, targetSlide, pres, allowedDir);
 
     return { slide: targetSlide, placeholders: slideData.placeholders };
   } catch (error) {

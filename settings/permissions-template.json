@@ -11,12 +11,11 @@
 
       "// ─────────────────────────────────────────────────────────────────",
       "// GIT OPERATIONS (read-only forms)",
-      "// Broad Bash(git:*) also covers hooks, aliases and destructive commands.",
+      "// Exact forms only: git diff and log accept --output (overwrites files) and git branch can delete branches.",
       "// ─────────────────────────────────────────────────────────────────",
-      "Bash(git status:*)",
-      "Bash(git diff:*)",
-      "Bash(git log:*)",
-      "Bash(git branch:*)",
+      "Bash(git status)",
+      "Bash(git diff)",
+      "Bash(git log --oneline)",
 
       "// ─────────────────────────────────────────────────────────────────",
       "// PACKAGE MANAGERS, INTERPRETERS AND NETWORK CLIENTS: deliberately NOT pre-approved.",

@@ -88,6 +88,7 @@ def authenticate():
         fd = os.open(TOKEN_PATH, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
         with os.fdopen(fd, 'w') as f:
             f.write(creds.to_json())
+        os.chmod(TOKEN_PATH, 0o600)  # repairs an older token file that was created more openly
         print(f"✅ Token saved to {TOKEN_PATH}")
 
     print("✅ Authentication successful!")

@@ -82,9 +82,9 @@ You can pre-approve actions by adding them to `~/.claude/settings.json`.
   "permissions": {
     "allow": [
       "// Git (read-only forms)",
-      "Bash(git status:*)",
-      "Bash(git diff:*)",
-      "Bash(git log:*)",
+      "Bash(git status)",
+      "Bash(git diff)",
+      "Bash(git log --oneline)",
 
       "// File operations (trash, not rm — see SAFETY-TRASH-OVER-RM.md)",
       "Bash(ls:*)",
