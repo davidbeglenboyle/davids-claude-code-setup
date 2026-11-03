@@ -57,6 +57,7 @@ Save as `~/.config/google-docs/gdocs_auth.py`:
 ```python
 #!/usr/bin/env python3
 """One-time authentication for Google Docs API."""
+import os
 from pathlib import Path
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -83,7 +84,11 @@ def authenticate():
             flow = InstalledAppFlow.from_client_secrets_file(str(CREDS_PATH), SCOPES)
             creds = flow.run_local_server(port=0)
 
-        TOKEN_PATH.write_text(creds.to_json())
+        # Create the token file private (0600) from the first byte, not chmod afterwards
+        fd = os.open(TOKEN_PATH, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, 'w') as f:
+            f.write(creds.to_json())
+        os.chmod(TOKEN_PATH, 0o600)  # repairs an older token file that was created more openly
         print(f"✅ Token saved to {TOKEN_PATH}")
 
     print("✅ Authentication successful!")

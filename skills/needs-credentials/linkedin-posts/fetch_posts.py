@@ -5,7 +5,7 @@ Authenticates via Chrome browser cookies (no stored credentials).
 Usage:
     python3 fetch_posts.py --config /path/to/partners.json --output /path/to/output/
     python3 fetch_posts.py --config /path/to/partners.json --output /path/to/output/ --max-posts 20
-    python3 fetch_posts.py --config /path/to/partners.json --output /path/to/output/ --person darrenperry
+    python3 fetch_posts.py --config /path/to/partners.json --output /path/to/output/ --person example-slug
     python3 fetch_posts.py --config /path/to/partners.json --output /path/to/output/ --no-comments
 
 All reusable primitives (cookies, extraction, silent-reshare detection, GraphQL

@@ -81,22 +81,28 @@ if [ -z "$SUBJECT" ]; then
     exit 1
 fi
 
-# Send via Python (more reliable than curl for SMTP)
-python3 << EOF
+# Send via Python (more reliable than curl for SMTP).
+# The values travel as environment variables and the heredoc is quoted ('PY'),
+# so the shell never splices email text into the Python source. Do not
+# "simplify" this back to $BODY inside the script: an email body containing
+# a closing quote would then run as code.
+SUBJECT="$SUBJECT" BODY="$BODY" TO="$TO" SENDER_EMAIL="$SENDER_EMAIL" APP_PASSWORD="$APP_PASSWORD" \
+python3 - << 'PY'
+import os
 import smtplib
 from email.mime.text import MIMEText
 
-msg = MIMEText('''$BODY''')
-msg['Subject'] = '''$SUBJECT'''
-msg['From'] = '$SENDER_EMAIL'
-msg['To'] = '$TO'
+msg = MIMEText(os.environ['BODY'])
+msg['Subject'] = os.environ['SUBJECT']
+msg['From'] = os.environ['SENDER_EMAIL']
+msg['To'] = os.environ['TO']
 
 with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-    server.login('$SENDER_EMAIL', '$APP_PASSWORD')
+    server.login(os.environ['SENDER_EMAIL'], os.environ['APP_PASSWORD'])
     server.send_message(msg)
 
-print(f"✅ Email sent to $TO")
-EOF
+print(f"Email sent to {os.environ['TO']}")
+PY
 ```
 
 Make it executable:
