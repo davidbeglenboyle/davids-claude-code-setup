@@ -178,12 +178,15 @@ Even with cloud sync, maintain backups:
 ### Simple: Archive periodically
 
 ```bash
-# Monthly backup
+# Monthly backup (skills and instructions only; secrets are deliberately left out)
+umask 077
 tar -czvf claude-backup-$(date +%Y-%m).tar.gz \
   ~/.claude/skills \
-  ~/.claude/CLAUDE.md \
-  ~/.config/secrets
+  ~/.claude/CLAUDE.md
+chmod 600 claude-backup-*.tar.gz
 ```
+
+Keep the secrets out of this archive. If you must back them up, put them in a password manager or an encrypted disk image, never in a plain tarball, and never in a synced folder (Dropbox, iCloud, Google Drive), where a copy of every key ends up on other devices and in version history.
 
 ### Better: Git for skills
 

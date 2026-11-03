@@ -117,12 +117,28 @@ function validateTextBoxPosition(slideData, bodyDimensions) {
   return errors;
 }
 
+// Security: slide HTML can name any path, and PptxGenJS embeds whatever file it is given.
+// Only image files inside the slide's own folder (or http/https/data URLs) may be embedded,
+// so a slide from an untrusted source cannot copy ~/.ssh or other local files into the deck.
+let allowedAssetDir = null;
+const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp']);
+
+function safeImagePath(rawPath) {
+  const imagePath = rawPath.startsWith('file://') ? rawPath.replace('file://', '') : rawPath;
+  if (/^(https?:|data:)/i.test(imagePath)) return imagePath;
+  const resolved = path.resolve(imagePath);
+  const dir = allowedAssetDir || process.cwd();
+  const ext = path.extname(resolved).toLowerCase();
+  if (!IMAGE_EXTENSIONS.has(ext) || !(resolved === dir || resolved.startsWith(dir + path.sep))) {
+    throw new Error(`Refusing to embed "${rawPath}": only image files inside ${dir} are allowed`);
+  }
+  return resolved;
+}
+
 // Helper: Add background to slide
 async function addBackground(slideData, targetSlide, tmpDir) {
   if (slideData.background.type === 'image' && slideData.background.path) {
-    let imagePath = slideData.background.path.startsWith('file://')
-      ? slideData.background.path.replace('file://', '')
-      : slideData.background.path;
+    const imagePath = safeImagePath(slideData.background.path);
     targetSlide.background = { path: imagePath };
   } else if (slideData.background.type === 'color' && slideData.background.value) {
     targetSlide.background = { color: slideData.background.value };
@@ -133,7 +149,7 @@ async function addBackground(slideData, targetSlide, tmpDir) {
 function addElements(slideData, targetSlide, pres) {
   for (const el of slideData.elements) {
     if (el.type === 'image') {
-      let imagePath = el.src.startsWith('file://') ? el.src.replace('file://', '') : el.src;
+      const imagePath = safeImagePath(el.src);
       targetSlide.addImage({
         path: imagePath,
         x: el.position.x,
@@ -912,6 +928,7 @@ async function html2pptx(htmlFile, pres, options = {}) {
     let slideData;
 
     const filePath = path.isAbsolute(htmlFile) ? htmlFile : path.join(process.cwd(), htmlFile);
+    allowedAssetDir = path.dirname(path.resolve(filePath));
     const validationErrors = [];
 
     try {

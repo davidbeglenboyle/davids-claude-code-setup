@@ -81,33 +81,18 @@ You can pre-approve actions by adding them to `~/.claude/settings.json`.
 {
   "permissions": {
     "allow": [
-      "// Git",
-      "Bash(git:*)",
-      "Bash(gh:*)",
-
-      "// Package managers",
-      "Bash(npm:*)",
-      "Bash(pip3:*)",
-
-      "// Python",
-      "Bash(python3:*)",
+      "// Git (read-only forms)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
 
       "// File operations (trash, not rm — see SAFETY-TRASH-OVER-RM.md)",
       "Bash(ls:*)",
       "Bash(mkdir:*)",
-      "Bash(cp:*)",
-      "Bash(mv:*)",
-      "Bash(trash:*)",
-
-      "// macOS",
-      "Bash(open:*)",
 
       "// Common domains",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:stackoverflow.com)",
-
-      "// Claude config",
-      "Write(~/.claude/*)"
+      "WebFetch(domain:stackoverflow.com)"
     ],
     "deny": [
       "Bash(rm:*)"
@@ -115,6 +100,10 @@ You can pre-approve actions by adding them to `~/.claude/settings.json`.
   }
 }
 ```
+
+### Keep the allow-list narrow
+
+Do not pre-approve interpreters, package managers or network clients (`python3`, `node`, `npm`, `npx`, `pip`, `brew`, `curl`, `wget`, `sqlite3`), and do not use `Bash(git:*)` or `Write(~/.claude/*)`. Each of those can run any code, send files to any host or rewrite your own settings, so a hidden instruction in a web page, email or document could use them with no prompt. A `rm` deny rule does not help, because Python or `git clean` can delete just as well. Let Claude prompt for these, or approve one exact command (for example `Bash(npm run test)`). Prompting more often is the price of staying in control.
 
 ## Settings Files
 

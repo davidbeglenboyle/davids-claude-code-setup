@@ -7,17 +7,14 @@ allowed-tools:
   - Read
   - Write
   - Edit
-  - Bash
   - Glob
   - Grep
-  - WebFetch
-  - WebSearch
 hooks:
   PreToolUse:
     - matcher: "Write|Edit|Bash|Read|Glob|Grep"
       hooks:
         - type: command
-          command: "cat task_plan.md 2>/dev/null | head -30 || true"
+          command: "head -30 task_plan.md 2>/dev/null | sed 's/^/[plan-with-files] /' || true"
   PostToolUse:
     - matcher: "Write|Edit"
       hooks:

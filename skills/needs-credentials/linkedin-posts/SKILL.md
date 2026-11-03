@@ -46,7 +46,7 @@ When you want a one-off "what is X posting about?":
 from linkedin_posts_lib import get_linkedin_cookies, create_api, extract_post_data
 
 api = create_api(get_linkedin_cookies())
-raw = api.get_profile_updates(public_id='darrenperry', max_results=20)
+raw = api.get_profile_updates(public_id='example-slug', max_results=20)
 posts = [extract_post_data(p) for p in raw]
 
 for p in posts:
@@ -55,7 +55,7 @@ for p in posts:
     print(f"  {p['text'][:200]}")
 ```
 
-The `public_id` is the URL slug: `linkedin.com/in/darrenperry` → `darrenperry`.
+The `public_id` is the URL slug: `linkedin.com/in/example-slug` → `example-slug`.
 
 ## Batch fetch (configured list)
 
@@ -74,10 +74,10 @@ python3 fetch_posts.py \
 {
   "partners": [
     {
-      "name": "Darren Perry",
-      "public_id": "darrenperry",
-      "role": "Partner, Digital Practice",
-      "location": "London"
+      "name": "Example Person",
+      "public_id": "example-slug",
+      "role": "Example role",
+      "location": "Example city"
     }
   ]
 }
@@ -102,10 +102,10 @@ Writes `posts/YYYY-MM-DD.json` with this shape:
 {
   "fetch_date": "2026-04-11",
   "partners": {
-    "darrenperry": {
-      "name": "Darren Perry",
-      "role": "Partner, Digital Practice",
-      "location": "London",
+    "example-slug": {
+      "name": "Example Person",
+      "role": "Example role",
+      "location": "Example city",
       "post_count": 12,
       "comment_count": 8,
       "posts": [ /* ... */ ],

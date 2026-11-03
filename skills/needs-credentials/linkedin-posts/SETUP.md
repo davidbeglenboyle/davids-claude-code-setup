@@ -61,7 +61,7 @@ On macOS, Chrome stores cookies in an encrypted SQLite database, and decryption 
 
 > "Python wants to use your confidential information stored in 'Chrome' in your keychain."
 
-Click **Always Allow**. If you click **Deny**, future runs will fail silently and you'll need to reset the Keychain entry for Chrome Safe Storage.
+Click **Allow** (once), not **Always Allow**. "Always Allow" gives that Python binary a standing right to read the key that decrypts every cookie in your Chrome profile, for any script you ever run with it, not just this skill. Allowing once means a prompt on each run, which is the safer trade. If you want no prompts, run the skill from a dedicated Python virtual environment and grant "Always Allow" only to that interpreter, never to the system or Homebrew Python. If you click **Deny**, future runs will fail silently and you'll need to reset the Keychain entry for Chrome Safe Storage.
 
 ## Test
 
@@ -91,7 +91,7 @@ Summary:
   Example Person: 4 original, 1 reshares, 3 comments, 127 likes
 ```
 
-If you see `ERROR: No li_at cookie found`, you're not signed into LinkedIn in Chrome. If you see a macOS Keychain prompt, click **Always Allow**.
+If you see `ERROR: No li_at cookie found`, you're not signed into LinkedIn in Chrome. If you see a macOS Keychain prompt, click **Allow** (once).
 
 ## Troubleshooting
 
@@ -101,7 +101,7 @@ You're not signed into LinkedIn in Chrome. Open Chrome, go to linkedin.com, sign
 
 ### macOS Keychain prompt keeps appearing
 
-Accept once with "Always Allow". If you accidentally denied, open **Keychain Access** → search for "Chrome Safe Storage" → delete the entry → run the script again → re-approve.
+Click "Allow" each time (see step 4 for why not "Always Allow"). If you accidentally denied, open **Keychain Access** → search for "Chrome Safe Storage" → delete the entry → run the script again → re-approve.
 
 ### HTTP 400 on comments fetch
 
@@ -137,7 +137,7 @@ When setting this skill up via Claude Code:
 
 1. Cannot sign the user into LinkedIn — the user must do this in Chrome
 2. Cannot install the Python packages without the user's approval — use the `Bash` tool and expect permission prompts
-3. Cannot dismiss the macOS Keychain prompt — the user must click "Always Allow" on first run
+3. Cannot dismiss the macOS Keychain prompt — the user must click "Allow" on first run (not "Always Allow")
 4. Can copy the skill files into `~/.claude/skills/linkedin-posts/`
 5. Can run the test fetch once signed-in status is confirmed
 

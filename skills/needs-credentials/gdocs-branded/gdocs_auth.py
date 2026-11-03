@@ -3,6 +3,7 @@
 
 Requires documents + drive scopes (drive scope needed to copy templates).
 """
+import os
 from pathlib import Path
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -35,8 +36,10 @@ def authenticate():
             flow = InstalledAppFlow.from_client_secrets_file(str(CREDS_PATH), SCOPES)
             creds = flow.run_local_server(port=0)
 
-        TOKEN_PATH.write_text(creds.to_json())
-        TOKEN_PATH.chmod(0o600)
+        # Create the token private (0600) from the first byte, not chmod afterwards
+        fd = os.open(TOKEN_PATH, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, 'w') as f:
+            f.write(creds.to_json())
         print(f"Token saved to {TOKEN_PATH}")
 
     print("Authentication successful!")
