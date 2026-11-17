@@ -187,15 +187,13 @@ Edit `~/.claude/settings.json`:
 {
   "permissions": {
     "allow": [
-      "// Git operations",
-      "Bash(git:*)",
+      "// Read-only git commands (never Bash(git:*): git can run any code)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
 
-      "// Package managers",
-      "Bash(npm:*)",
-      "Bash(pip:*)",
-
-      "// Your custom scripts",
-      "Bash(~/bin/*)",
+      "// One exact command you trust, never a whole package manager",
+      "Bash(npm run test)",
 
       "// Web access",
       "WebFetch(domain:github.com)",
