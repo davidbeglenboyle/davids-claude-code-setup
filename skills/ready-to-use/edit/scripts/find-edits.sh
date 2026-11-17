@@ -13,6 +13,11 @@
 set -euo pipefail
 
 TARGET="${1:-.}"
+# A target that starts with "-" would be read as an option by rg, grep or find:
+# make it an explicit relative path instead.
+if [[ "$TARGET" == -* ]]; then
+    TARGET="./$TARGET"
+fi
 
 # Use ripgrep if available, fall back to grep
 if command -v rg &> /dev/null; then

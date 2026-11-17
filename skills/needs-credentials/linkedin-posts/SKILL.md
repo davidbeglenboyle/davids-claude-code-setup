@@ -160,7 +160,7 @@ The response contains a denormalised `included` array; the library filters for `
 
 LinkedIn periodically rotates the hash-suffixed `queryId` values on their GraphQL endpoint. When this happens, the comments fetch starts returning HTTP 400. To re-capture:
 
-1. Launch Chrome with remote debugging (any method — the `comments-probe.passe` script assumes [passe](https://github.com/spm1001/passe) on port 9223)
+1. Launch a SEPARATE Chrome with remote debugging and a fresh, throwaway profile (`--user-data-dir` pointing at a new empty folder), never your everyday profile, and sign in to LinkedIn there. While the debugging port is open, any program on your Mac can drive that signed-in browser, so quit it as soon as the capture is done. (The `comments-probe.passe` script assumes [passe](https://github.com/spm1001/passe) on port 9223.)
 2. Run `PASSE_CDP=http://localhost:9223 passe run comments-probe.passe`
 3. Extract the new query IDs from `/tmp/comments-capture.jsonl`:
 
