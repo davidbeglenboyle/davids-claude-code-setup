@@ -90,6 +90,7 @@ SUBJECT="$SUBJECT" BODY="$BODY" TO="$TO" SENDER_EMAIL="$SENDER_EMAIL" APP_PASSWO
 python3 - << 'PY'
 import os
 import smtplib
+import ssl
 from email.mime.text import MIMEText
 
 msg = MIMEText(os.environ['BODY'])
@@ -97,7 +98,9 @@ msg['Subject'] = os.environ['SUBJECT']
 msg['From'] = os.environ['SENDER_EMAIL']
 msg['To'] = os.environ['TO']
 
-with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+# Verify Gmail's certificate before the app password is sent: without a context,
+# SMTP_SSL does not check who it is talking to.
+with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=ssl.create_default_context(), timeout=30) as server:
     server.login(os.environ['SENDER_EMAIL'], os.environ['APP_PASSWORD'])
     server.send_message(msg)
 

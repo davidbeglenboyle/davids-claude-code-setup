@@ -7,9 +7,10 @@
 #     profiles that previously worked.
 #
 # HOW TO RUN
-#     1. Make sure you're logged into LinkedIn in the debug Chrome on port 9223:
-#          chrome-debug         # or however you launch Chrome with --remote-debugging-port=9223
-#          # then manually log into LinkedIn in that window if needed
+#     1. Log into LinkedIn in a SEPARATE debug Chrome on port 9223 with a fresh,
+#        throwaway profile (--user-data-dir pointing at a new empty folder), never
+#        your everyday profile. While the port is open any program on the Mac can
+#        drive that signed-in browser, so quit it when the capture is done.
 #
 #     2. Replace the target profile URL below with any person's /recent-activity/comments/
 #        page — the probe just needs LinkedIn to issue a real comments-on-others

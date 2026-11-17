@@ -30,7 +30,8 @@ WHAT'S NOT IN HERE (per-pipeline orchestration stays local)
 WHEN LINKEDIN ROTATES GRAPHQL QUERY IDS
     fetch_person_comments starts returning http 400. To re-capture using passe:
 
-        chrome-debug                                      # launches debug Chrome
+        # a SEPARATE debug Chrome with a fresh throwaway profile, never your
+        # everyday one; quit it when done (see SKILL.md)
         PASSE_CDP=http://localhost:9223 passe run comments-probe.passe
 
     Then extract the new hashes from /tmp/comments-capture.jsonl and update
